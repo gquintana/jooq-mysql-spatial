@@ -5,11 +5,13 @@
 package net.gquintana.jooq.mysql;
 
 import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.geom.Polygon;
 import com.vividsolutions.jts.geom.PrecisionModel;
+import static org.junit.Assert.assertEquals;
 
 /**
  *
@@ -35,5 +37,22 @@ public class GeometryHelper {
     public Polygon createPolygon(Coordinate ... coordinates) {
         return geometryFactory.createPolygon(coordinates);
     }
-    
+    public Point createLyonPoint() {
+        return createPoint(lyonCoord);
+    }
+    public LineString createParisLyonLineString() {
+        return createLineString(parisCoord, lyonCoord);
+    }
+    public Polygon createFrancePolygon() {
+        return createPolygon(lilleCoord, strasbourgCoord, niceCoord, perpignanCoord, biarritzCoord, brestCoord, lilleCoord);
+    }
+    public static void assertEqualsGeometry(Geometry expected, Geometry actual) {
+        assertEquals(expected.getClass(), actual.getClass());
+        assertEquals(expected.getCoordinates().length, actual.getCoordinates().length);
+        for(int i=0;i<expected.getCoordinates().length; i++) {
+            assertEquals(expected.getCoordinates()[i].x, actual.getCoordinates()[i].x, 0.1);
+            assertEquals(expected.getCoordinates()[i].y, actual.getCoordinates()[i].y, 0.1);
+        }
+    }
+
 }

@@ -1,13 +1,13 @@
 /*
  * Default License
  */
+
 package net.gquintana.jooq.mysql;
 
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
-import java.util.ArrayList;
+import com.vividsolutions.jts.io.WKTWriter;
 import java.util.Collection;
-import java.util.List;
 import javax.sql.DataSource;
 import org.jooq.DSLContext;
 import org.junit.After;
@@ -17,25 +17,25 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import static net.gquintana.jooq.mysql.Tables.*;
 import org.jooq.Configuration;
+import org.jooq.Field;
 import org.jooq.TransactionalRunnable;
-
+import static net.gquintana.jooq.mysql.MySQLSpatialDSL.*;
 /**
  *
  * @author gerald
  */
 @RunWith(Parameterized.class)
-public class GeometryConverterTest {
-
+public class MySQLSpatialDSLConversionTest {
     private final DataSourceConfiguration dataSourceConfiguration;
     private final DataSource dataSource;
     private final GeometryFactory geometryFactory;
     private final Geometry geometry;
-    private final GeometryConverter converter = new GeometryConverter();
+    private final String wkt;
 
     @Parameterized.Parameters
     public static Collection<Object[]> getParameters() {
         DataSourceConfiguration dataSourceConfiguration = new DataSourceConfiguration();
-        GeometryHelper gh = new GeometryHelper();
+        GeometryHelper gh = new GeometryHelper();        
         GeometryFactory gf = gh.geometryFactory;
         return new ParametersBuilder()
                 .add(dataSourceConfiguration, gf, gh.createLyonPoint())
@@ -43,51 +43,55 @@ public class GeometryConverterTest {
                 .add(dataSourceConfiguration, gf, gh.createFrancePolygon())
                 .build();
     }
-
-    public GeometryConverterTest(DataSourceConfiguration dataSourceConfiguration, GeometryFactory geometryFactory, Geometry geometry) {
+    public MySQLSpatialDSLConversionTest(DataSourceConfiguration dataSourceConfiguration, GeometryFactory geometryFactory, Geometry geometry) {
         this.dataSourceConfiguration = dataSourceConfiguration;
         this.dataSource = dataSourceConfiguration.dataSource();
         this.geometryFactory = geometryFactory;
         this.geometry = geometry;
-        this.converter.setCoordinateSequenceFactory(geometryFactory.getCoordinateSequenceFactory());
+        this.wkt = new WKTWriter().write(geometry);
     }
 
     private void assertEqualsGeometry(Geometry result) {
         GeometryHelper.assertEqualsGeometry(geometry, result);
     }
-
-    @Test
-    public void testToFrom() {
-        byte[] bytes = (byte[]) converter.to(geometry);
-        Geometry result = converter.from(bytes);
-        assertEqualsGeometry(result);
+    private static String removeSpace(String s) {
+        return s.replaceAll("\\s+", "");
     }
-
     @Test
-    public void testInsert_SelectById() {
+    public void testInsertSelect() {
         final DSLContext dslContext = dataSourceConfiguration.jooq();
         dslContext.transaction(new TransactionalRunnable() {
+
             @Override
             public void run(Configuration configuration) throws Exception {
-                // Clean
                 dslContext.delete(TEST_GEOMETRY).execute();
-                // Insert
                 dslContext.insertInto(TEST_GEOMETRY, TEST_GEOMETRY.ID, TEST_GEOMETRY.GEOM)
-                        .values(1, geometry)
+                        .values(val(1), GeomFromText(wkt))
                         .execute();
-                // Select by Id
-                Geometry result = dslContext.select(TEST_GEOMETRY.GEOM)
+                final Field<String> wktField = AsWKT(TEST_GEOMETRY.GEOM).as(wkt);
+                String wkt2 = dslContext.select(wktField)
                         .from(TEST_GEOMETRY)
-                        .where(TEST_GEOMETRY.ID.eq(1))
-                        .fetchOne(TEST_GEOMETRY.GEOM);
-                // Clean
-                dslContext.delete(TEST_GEOMETRY).execute();
+                        .fetchOne(wktField);
+                assertEquals(removeSpace(wkt), removeSpace(wkt2));
             }
         });
+        Geometry result=dslContext.select(GeomFromText(wkt)).fetchOne().value1();
+        GeometryHelper.assertEqualsGeometry(geometry, result);
     }
-
-    @After
-    public void tearDown() {
+    
+    @Test
+    public void testTextToGeom() {
+        final DSLContext dslContext = dataSourceConfiguration.jooq();
+        final Field<Geometry> geomField = GeomFromText(wkt).as("geom");
+        Geometry result=dslContext.select(geomField).fetchOne(geomField);
+        GeometryHelper.assertEqualsGeometry(geometry, result);
     }
-
+    @Test
+    public void testGeomToText() {
+        final DSLContext dslContext = dataSourceConfiguration.jooq();
+        final Field<String> wktField = AsWKT(geometry).as("wkt");
+        String result=dslContext.select(wktField).fetchOne(wktField);
+        assertEquals(removeSpace(wkt), removeSpace(result));        
+    }
+    
 }
