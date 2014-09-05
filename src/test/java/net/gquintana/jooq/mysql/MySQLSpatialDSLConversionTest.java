@@ -68,7 +68,7 @@ public class MySQLSpatialDSLConversionTest {
                 dslContext.insertInto(TEST_GEOMETRY, TEST_GEOMETRY.ID, TEST_GEOMETRY.GEOM)
                         .values(val(1), GeomFromText(wkt))
                         .execute();
-                final Field<String> wktField = AsWKT(TEST_GEOMETRY.GEOM).as(wkt);
+                final Field<String> wktField = AsWKT(TEST_GEOMETRY.GEOM).as("wkt");
                 String wkt2 = dslContext.select(wktField)
                         .from(TEST_GEOMETRY)
                         .fetchOne(wktField);
