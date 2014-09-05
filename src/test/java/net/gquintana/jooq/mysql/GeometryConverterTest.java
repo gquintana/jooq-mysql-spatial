@@ -41,6 +41,7 @@ public class GeometryConverterTest {
                 .add(dataSourceConfiguration, gf, gh.createLyonPoint())
                 .add(dataSourceConfiguration, gf, gh.createParisLyonLineString())
                 .add(dataSourceConfiguration, gf, gh.createFrancePolygon())
+                .add(dataSourceConfiguration, gf, null)
                 .build();
     }
 

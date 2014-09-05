@@ -47,7 +47,9 @@ public class GeometryConverter implements Converter<Object, Geometry> {
      */
     @Override
     public Geometry from(Object databaseObject) {
-        try (ByteArrayInputStream inputStream = new ByteArrayInputStream((byte[]) databaseObject)) {            
+        final byte[] bytes = (byte[]) databaseObject;            
+        if (bytes == null) return null;
+        try (ByteArrayInputStream inputStream = new ByteArrayInputStream(bytes)) {            
             // Read SRID
             byte[] sridBytes = new byte[4];
             inputStream.read(sridBytes);
@@ -70,6 +72,7 @@ public class GeometryConverter implements Converter<Object, Geometry> {
      */
     @Override
     public Object to(Geometry userObject) {
+        if (userObject == null) return null;
         try(ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
             // Write SRID
             byte[] sridBytes = new byte[4];
