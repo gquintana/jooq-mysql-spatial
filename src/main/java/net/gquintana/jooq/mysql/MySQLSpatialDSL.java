@@ -5,9 +5,13 @@
 package net.gquintana.jooq.mysql;
 
 import com.vividsolutions.jts.geom.Geometry;
+import org.jooq.DataType;
 import org.jooq.Field;
+import org.jooq.Param;
+import org.jooq.SQLDialect;
 import org.jooq.impl.DSL;
 import static org.jooq.impl.DSL.function;
+import org.jooq.impl.DefaultDataType;
 
 /**
  *

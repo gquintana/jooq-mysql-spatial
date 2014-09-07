@@ -56,22 +56,8 @@ Search to country containing Lyon
 
 # Limitations and TODOs
 
-- The Endianness used to read/write geometries to bytes is not configurable nor autodetectable
-- MySQLSpatialDSL functions behave differently depending on the context:
-
-    // Will succeed:
-    // select AsWKT(`city`.`geom`) as `wkt` from `city`
-    Field<String> wktField = AsWKT(CITY.GEOM).as(wkt);
-    String wkt2 = dsl.select(wktField).from(CITY).fetchOne(wktField);
-
-    // Will fail Type class com.vividsolutions.jts.geom.Geometry is not supported in dialect SQL99:
-    // select AsWKT(?) as `wkt` from dual
-    Field<String> wktField = AsWKT(geometry).as("wkt");
-    String result=dsl.select(wktField).fetchOne(wktField);
-
-- The GeometryConverter converts Geometry to/from Object 
-    instead of to/from byte[]  because DefaultDataType.getDefaultDataType() is of type Object 
-    and Codegen produces:
+- The Endianness used to read/write geometries to bytes is not configurable nor autodetectable yet
+- The GeometryConverter converts Geometry to/from Object instead of to/from byte[] because DefaultDataType.getDefaultDataType() is of type Object and Codegen produces:
 
     public final org.jooq.TableField<net.gquintana.jooq.mysql.tables.records.TestGeometryRecord, com.vividsolutions.jts.geom.Geometry> GEOM = 
         createField("geom", 
@@ -79,5 +65,4 @@ Search to country containing Lyon
             this, 
             "", 
             new net.gquintana.jooq.mysql.GeometryConverter());
-
 

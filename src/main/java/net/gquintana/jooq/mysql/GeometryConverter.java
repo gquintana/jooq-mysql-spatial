@@ -18,12 +18,17 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import org.jooq.Converter;
+import org.jooq.DataType;
+import org.jooq.SQLDialect;
+import org.jooq.impl.DefaultDataType;
 
 /**
+ * Converter JTS Geometry to/from byte array.
  * Inspired by
  * <a
  * href="http://www.dev-garden.org/2011/11/27/loading-mysql-spatial-data-with-jdbc-and-jts-wkbreader/">Loading
- * MySQL Spatial Data with JDBC and JTS WKBReader</a>
+ * MySQL Spatial Data with JDBC and JTS WKBReader</a>. Using Object instead
+ * of byte[] because of codegen.
  */
 public class GeometryConverter implements Converter<Object, Geometry> {
     /**
@@ -128,5 +133,14 @@ public class GeometryConverter implements Converter<Object, Geometry> {
     public void setOutputDimension(int outputDimension) {
         this.outputDimension = outputDimension;
     }
-
+    /**
+     * Manually register de {@link org.jooq.impl.ConvertedDataType} to avoid the dreaded
+     * "org.jooq.exception.SQLDialectNotSupportedException: 
+     * Type class com.vividsolutions.jts.geom.Geometry is not supported in dialect SQL99"
+     * @return ConvertedDataType
+     */
+    public DataType<Geometry> registerDataType() {
+        DataType<Object> dataType = DefaultDataType.getDefaultDataType(SQLDialect.MYSQL, "geometry");
+        return dataType.asConvertedDataType(this);
+    }
 }

@@ -11,7 +11,7 @@ import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.geom.Polygon;
 import com.vividsolutions.jts.geom.PrecisionModel;
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 /**
  *
@@ -47,11 +47,15 @@ public class GeometryHelper {
         return createPolygon(lilleCoord, strasbourgCoord, niceCoord, perpignanCoord, biarritzCoord, brestCoord, lilleCoord);
     }
     public static void assertEqualsGeometry(Geometry expected, Geometry actual) {
-        assertEquals(expected.getClass(), actual.getClass());
-        assertEquals(expected.getCoordinates().length, actual.getCoordinates().length);
-        for(int i=0;i<expected.getCoordinates().length; i++) {
-            assertEquals(expected.getCoordinates()[i].x, actual.getCoordinates()[i].x, 0.1);
-            assertEquals(expected.getCoordinates()[i].y, actual.getCoordinates()[i].y, 0.1);
+        if (expected == null) {
+            assertNull(actual);
+        } else {
+            assertEquals(expected.getClass(), actual.getClass());
+            assertEquals(expected.getCoordinates().length, actual.getCoordinates().length);
+            for(int i=0;i<expected.getCoordinates().length; i++) {
+                assertEquals(expected.getCoordinates()[i].x, actual.getCoordinates()[i].x, 0.1);
+                assertEquals(expected.getCoordinates()[i].y, actual.getCoordinates()[i].y, 0.1);
+            }
         }
     }
 

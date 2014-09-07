@@ -20,6 +20,7 @@ import org.jooq.Configuration;
 import org.jooq.Field;
 import org.jooq.TransactionalRunnable;
 import static net.gquintana.jooq.mysql.MySQLSpatialDSL.*;
+import org.jooq.DataType;
 /**
  *
  * @author gerald
@@ -49,6 +50,7 @@ public class MySQLSpatialDSLConversionTest {
         this.geometryFactory = geometryFactory;
         this.geometry = geometry;
         this.wkt = new WKTWriter().write(geometry);
+        new GeometryConverter().registerDataType();
     }
 
     private void assertEqualsGeometry(Geometry result) {
